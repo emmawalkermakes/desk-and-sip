@@ -1,0 +1,45 @@
+---
+layout: page.njk
+title: Photo size checker for printing
+description: Work out how many pixels you need to print a photo at a given size in centimetres, and whether your phone photo is sharp enough.
+permalink: /photo-size-checker/
+---
+<p>Planning to put a photo on a phone case, tumbler, coaster or print? Enter the print size and your photo's pixel dimensions to see if it's likely to look sharp. Everything runs in your browser.</p>
+<div class="tool">
+  <label for="wcm">Print width (cm)</label>
+  <input id="wcm" type="number" min="1" step="0.1" value="10">
+  <label for="hcm">Print height (cm)</label>
+  <input id="hcm" type="number" min="1" step="0.1" value="10">
+  <label for="dpi">Target quality</label>
+  <select id="dpi"><option value="300">High detail, viewed up close (300 DPI)</option><option value="200" selected>Good, everyday items (200 DPI)</option><option value="150">Acceptable, viewed from a distance (150 DPI)</option></select>
+  <label for="wpx">Your photo width (pixels)</label>
+  <input id="wpx" type="number" min="1" value="3024">
+  <label for="hpx">Your photo height (pixels)</label>
+  <input id="hpx" type="number" min="1" value="4032">
+  <div id="out" aria-live="polite"></div>
+</div>
+<h2>How to find your photo's pixel size</h2>
+<ul>
+  <li><strong>iPhone:</strong> open the photo in Photos and swipe up (or tap the info button) to see details including resolution.</li>
+  <li><strong>Android:</strong> open the photo in your gallery app and look for "Details" or "Info".</li>
+  <li><strong>Computer:</strong> right-click the file and check its properties or info panel.</li>
+</ul>
+<p>Photos sent through messaging apps or downloaded from social media are often compressed and smaller than the original. Use the original from your camera roll where you can.</p>
+<p class="meta">The maths: pixels needed = centimetres ÷ 2.54 × DPI. DPI targets are common rules of thumb, not a guarantee; your printer or maker may have their own requirements, so always check their guidelines.</p>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function run() {
+    var wcm = +$("wcm").value, hcm = +$("hcm").value, dpi = +$("dpi").value, wpx = +$("wpx").value, hpx = +$("hpx").value;
+    if (!(wcm > 0 && hcm > 0 && wpx > 0 && hpx > 0)) { $("out").innerHTML = "<p>Enter all four numbers.</p>"; return; }
+    var nw = Math.ceil(wcm / 2.54 * dpi), nh = Math.ceil(hcm / 2.54 * dpi);
+    // allow rotating the photo to match the print orientation
+    var a = Math.min(wpx / nw, hpx / nh), b = Math.min(hpx / nw, wpx / nh), ratio = Math.max(a, b);
+    var effDpi = Math.round(ratio * dpi);
+    var verdict = ratio >= 1 ? "✅ Enough pixels for this size and quality." : ratio >= 0.75 ? "⚠️ A little short. It may look slightly soft; try a smaller print or a lower quality target." : "❌ Too small for this size. Expect a blurry or pixelated print.";
+    $("out").innerHTML = "<ul class='results'><li>Pixels needed: <strong>" + nw + " × " + nh + "</strong></li><li>Your photo would print at about <strong>" + effDpi + " DPI</strong> (cropping reduces this further).</li><li>" + verdict + "</li></ul>";
+  }
+  ["wcm", "hcm", "dpi", "wpx", "hpx"].forEach(function (id) { $(id).addEventListener("input", run); });
+  run();
+})();
+</script>
